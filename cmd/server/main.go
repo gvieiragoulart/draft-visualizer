@@ -12,7 +12,9 @@ import (
 	"time"
 
 	"github.com/gvieiragoulart/draft-visualizer/internal/cache"
+	"github.com/gvieiragoulart/draft-visualizer/internal/clients/esports"
 	"github.com/gvieiragoulart/draft-visualizer/internal/config"
+	"github.com/gvieiragoulart/draft-visualizer/internal/controller"
 	"github.com/gvieiragoulart/draft-visualizer/internal/database"
 	"github.com/gvieiragoulart/draft-visualizer/internal/riot"
 	"github.com/gvieiragoulart/draft-visualizer/internal/service"
@@ -31,6 +33,7 @@ func main() {
 
 	// Initialize Riot API client
 	riotClient := riot.NewClient(cfg.RiotAPIKey)
+	esportsClient := esports.NewClient(cfg.EsportsAPIKey)
 
 	// Initialize database client
 	dbClient, err := database.NewClient(cfg.DatabaseURL)
@@ -49,6 +52,13 @@ func main() {
 	// Initialize service
 	svc := service.NewService(riotClient, dbClient, cacheClient)
 
+	// Initialize controller
+	scheduleHandler := controller.NewScheduleHandler(
+		service.NewScheduleService(
+			esportsClient,
+		),
+	)
+
 	// Create server
 	server := &Server{service: svc}
 
@@ -58,6 +68,7 @@ func main() {
 	mux.HandleFunc("/summoner", server.summonerHandler)
 	mux.HandleFunc("/matches", server.matchesHandler)
 	mux.HandleFunc("/match", server.matchHandler)
+	mux.HandleFunc("/schedule", scheduleHandler.ScheduleHandler)
 
 	// Create HTTP server
 	httpServer := &http.Server{

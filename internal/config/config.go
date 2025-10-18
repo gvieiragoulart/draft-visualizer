@@ -4,22 +4,33 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 // Config holds all configuration for the application
 type Config struct {
-	RiotAPIKey   string
-	DatabaseURL  string
-	RedisURL     string
+	RiotAPIKey    string
+	EsportsAPIKey string
+	DatabaseURL   string
+	RedisURL      string
 	RedisPassword string
-	ServerPort   int
+	ServerPort    int
 }
 
 // Load loads configuration from environment variables
 func Load() (*Config, error) {
+	// Load .env file if it exists
+	_ = godotenv.Load()
+
 	riotAPIKey := os.Getenv("RIOT_API_KEY")
 	if riotAPIKey == "" {
 		return nil, fmt.Errorf("RIOT_API_KEY environment variable is required")
+	}
+
+	esportsAPIKey := os.Getenv("ESPORTS_API_KEY")
+	if esportsAPIKey == "" {
+		return nil, fmt.Errorf("ESPORTS_API_KEY environment variable is required")
 	}
 
 	databaseURL := os.Getenv("DATABASE_URL")
@@ -45,10 +56,11 @@ func Load() (*Config, error) {
 	}
 
 	return &Config{
-		RiotAPIKey:   riotAPIKey,
-		DatabaseURL:  databaseURL,
-		RedisURL:     redisURL,
+		RiotAPIKey:    riotAPIKey,
+		EsportsAPIKey: esportsAPIKey,
+		DatabaseURL:   databaseURL,
+		RedisURL:      redisURL,
 		RedisPassword: redisPassword,
-		ServerPort:   serverPort,
+		ServerPort:    serverPort,
 	}, nil
 }

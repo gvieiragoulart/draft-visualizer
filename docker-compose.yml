@@ -38,11 +38,11 @@ services:
       dockerfile: Dockerfile
     container_name: draft-visualizer-app
     environment:
-      RIOT_API_KEY: ${RIOT_API_KEY}
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/draftvisualizer?sslmode=disable
-      REDIS_URL: redis://redis:6379
-      REDIS_PASSWORD: ""
-      SERVER_PORT: 8080
+      - RIOT_API_KEY=${RIOT_API_KEY}
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/draftvisualizer?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - SERVER_PORT=${SERVER_PORT}
     ports:
       - "8080:8080"
     depends_on:

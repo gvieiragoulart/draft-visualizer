@@ -9,6 +9,10 @@ require (
 )
 
 require (
+	cgt.name/pkg/go-mwclient v1.3.0 // indirect
+	github.com/antonholmquist/jason v1.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/mrjones/oauth v0.0.0-20190623134757-126b35219450 // indirect
 )

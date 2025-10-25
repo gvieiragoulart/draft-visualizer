@@ -10,23 +10,14 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/gvieiragoulart/draft-visualizer/internal/cache"
-	"github.com/gvieiragoulart/draft-visualizer/internal/database"
 	"github.com/gvieiragoulart/draft-visualizer/internal/riot"
 	"github.com/redis/go-redis/v9"
 )
 
 func TestNewService(t *testing.T) {
 	mockRiot := riot.NewClient("test-key")
-	
-	db, _, _ := sqlmock.New()
-	defer db.Close()
-	mockDB := database.NewClientWithDB(db)
-	
-	mockRedis := &mockRedisClient{}
-	mockCache := cache.NewClientWithRedis(mockRedis)
 
-	service := NewService(mockRiot, mockDB, mockCache)
+	service := NewService(mockRiot)
 	if service == nil {
 		t.Fatal("expected service to be created")
 	}
@@ -102,18 +93,8 @@ func TestGetSummoner_FromAPI(t *testing.T) {
 	}
 
 	riotClient := riot.NewClientWithHTTPClient("test-key", mockHTTP)
-	
-	db, mock, _ := sqlmock.New()
-	defer db.Close()
-	
-	rows := sqlmock.NewRows([]string{"id", "created_at", "updated_at"}).
-		AddRow(1, time.Now(), time.Now())
-	mock.ExpectQuery(`INSERT INTO summoners`).WillReturnRows(rows)
-	
-	dbClient := database.NewClientWithDB(db)
-	cacheClient := cache.NewClientWithRedis(&mockRedisClient{})
 
-	service := NewService(riotClient, dbClient, cacheClient)
+	service := NewService(riotClient)
 	ctx := context.Background()
 
 	summoner, err := service.GetSummoner(ctx, "na1", "TestSummoner")
@@ -140,14 +121,8 @@ func TestGetMatches_FromAPI(t *testing.T) {
 	}
 
 	riotClient := riot.NewClientWithHTTPClient("test-key", mockHTTP)
-	
-	db, _, _ := sqlmock.New()
-	defer db.Close()
-	dbClient := database.NewClientWithDB(db)
-	
-	cacheClient := cache.NewClientWithRedis(&mockRedisClient{})
 
-	service := NewService(riotClient, dbClient, cacheClient)
+	service := NewService(riotClient)
 	ctx := context.Background()
 
 	matches, err := service.GetMatches(ctx, "test-puuid", 3)
@@ -182,22 +157,19 @@ func TestGetMatch_FromAPI(t *testing.T) {
 	}
 
 	riotClient := riot.NewClientWithHTTPClient("test-key", mockHTTP)
-	
+
 	db, mock, _ := sqlmock.New()
 	defer db.Close()
-	
+
 	// First query - GetMatchByID returns no rows (not found)
 	mock.ExpectQuery(`SELECT id, match_id`).WillReturnError(sql.ErrNoRows)
-	
+
 	// Second query - SaveMatch inserts the match
 	rows := sqlmock.NewRows([]string{"id", "created_at", "updated_at"}).
 		AddRow(1, time.Now(), time.Now())
 	mock.ExpectQuery(`INSERT INTO matches`).WillReturnRows(rows)
-	
-	dbClient := database.NewClientWithDB(db)
-	cacheClient := cache.NewClientWithRedis(&mockRedisClient{})
 
-	service := NewService(riotClient, dbClient, cacheClient)
+	service := NewService(riotClient)
 	ctx := context.Background()
 
 	match, err := service.GetMatch(ctx, "NA1_match1")
@@ -209,4 +181,3 @@ func TestGetMatch_FromAPI(t *testing.T) {
 		t.Errorf("expected match ID to be NA1_match1, got %s", match.Metadata.MatchID)
 	}
 }
-

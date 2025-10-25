@@ -43,6 +43,8 @@ services:
       - REDIS_URL=redis://redis:6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - SERVER_PORT=${SERVER_PORT}
+      - RIOT_API_KEY=${RIOT_API_KEY}
+      - ESPORTS_API_KEY=${ESPORTS_API_KEY}
     ports:
       - "8080:8080"
     depends_on:

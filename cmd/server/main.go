@@ -11,11 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gvieiragoulart/draft-visualizer/internal/cache"
 	"github.com/gvieiragoulart/draft-visualizer/internal/clients/esports"
 	"github.com/gvieiragoulart/draft-visualizer/internal/config"
 	"github.com/gvieiragoulart/draft-visualizer/internal/controller"
-	"github.com/gvieiragoulart/draft-visualizer/internal/database"
 	"github.com/gvieiragoulart/draft-visualizer/internal/riot"
 	"github.com/gvieiragoulart/draft-visualizer/internal/service"
 )
@@ -35,22 +33,8 @@ func main() {
 	riotClient := riot.NewClient(cfg.RiotAPIKey)
 	esportsClient := esports.NewClient(cfg.EsportsAPIKey)
 
-	// Initialize database client
-	dbClient, err := database.NewClient(cfg.DatabaseURL)
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	}
-	defer dbClient.Close()
-
-	// Initialize cache client
-	cacheClient, err := cache.NewClient(cfg.RedisURL, cfg.RedisPassword)
-	if err != nil {
-		log.Fatalf("Failed to connect to cache: %v", err)
-	}
-	defer cacheClient.Close()
-
 	// Initialize service
-	svc := service.NewService(riotClient, dbClient, cacheClient)
+	svc := service.NewService(riotClient)
 
 	// Initialize controller
 	scheduleHandler := controller.NewScheduleHandler(

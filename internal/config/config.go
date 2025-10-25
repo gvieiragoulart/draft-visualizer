@@ -16,6 +16,8 @@ type Config struct {
 	RedisURL      string
 	RedisPassword string
 	ServerPort    int
+	WikiUsername  string
+	WikiPassword  string
 }
 
 // Load loads configuration from environment variables
@@ -55,6 +57,12 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("invalid SERVER_PORT: %w", err)
 	}
 
+	wikiUsername := os.Getenv("WIKI_USERNAME")
+	wikiPassword := os.Getenv("WIKI_PASSWORD")
+	if wikiUsername == "" || wikiPassword == "" {
+		return nil, fmt.Errorf("WIKI_USERNAME and WIKI_PASSWORD environment variables are required")
+	}
+
 	return &Config{
 		RiotAPIKey:    riotAPIKey,
 		EsportsAPIKey: esportsAPIKey,
@@ -62,5 +70,7 @@ func Load() (*Config, error) {
 		RedisURL:      redisURL,
 		RedisPassword: redisPassword,
 		ServerPort:    serverPort,
+		WikiUsername:  wikiUsername,
+		WikiPassword:  wikiPassword,
 	}, nil
 }

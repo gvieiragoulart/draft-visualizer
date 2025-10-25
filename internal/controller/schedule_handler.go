@@ -26,7 +26,18 @@ func (sh *ScheduleHandler) ScheduleHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	ctx := r.Context()
-	schedule, err := sh.service.GetSchedule(ctx)
+
+	enriched := r.URL.Query().Get("enriched") == "true"
+
+	var response interface{}
+	var err error
+
+	if enriched {
+		response, err = sh.service.GetScheduleEnriched(ctx)
+	} else {
+		response, err = sh.service.GetSchedule(ctx)
+	}
+
 	if err != nil {
 		log.Printf("Error getting schedule: %v", err)
 		http.Error(w, fmt.Sprintf("Error getting schedule: %v", err), http.StatusInternalServerError)
@@ -34,5 +45,46 @@ func (sh *ScheduleHandler) ScheduleHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(schedule)
+	json.NewEncoder(w).Encode(response)
+}
+
+func (sh *ScheduleHandler) TeamsInScheduleHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	ctx := r.Context()
+	teamCodes, err := sh.service.GetTeamsInSchedule(ctx)
+	if err != nil {
+		log.Printf("Error getting teams in schedule: %v", err)
+		http.Error(w, fmt.Sprintf("Error getting teams in schedule: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{
+		"teams": teamCodes,
+		"count": len(teamCodes),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (sh *ScheduleHandler) TeamsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	ctx := r.Context()
+	teams, err := sh.service.GetTeamsData(ctx)
+	if err != nil {
+		log.Printf("Error getting teams: %v", err)
+		http.Error(w, fmt.Sprintf("Error getting teams: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(teams)
 }

@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gvieiragoulart/draft-visualizer/internal/clients/cargo"
 	"github.com/gvieiragoulart/draft-visualizer/internal/clients/esports"
 	"github.com/gvieiragoulart/draft-visualizer/internal/config"
 	"github.com/gvieiragoulart/draft-visualizer/internal/controller"
@@ -32,6 +33,7 @@ func main() {
 	// Initialize Riot API client
 	riotClient := riot.NewClient(cfg.RiotAPIKey)
 	esportsClient := esports.NewClient(cfg.EsportsAPIKey)
+	cargoClient := cargo.NewClient()
 
 	// Initialize service
 	svc := service.NewService(riotClient)
@@ -40,6 +42,12 @@ func main() {
 	scheduleHandler := controller.NewScheduleHandler(
 		service.NewScheduleService(
 			esportsClient,
+		),
+	)
+
+	cargoHandler := controller.NewCargoHandler(
+		service.NewCargoService(
+			cargoClient,
 		),
 	)
 
@@ -53,6 +61,7 @@ func main() {
 	mux.HandleFunc("/matches", server.matchesHandler)
 	mux.HandleFunc("/match", server.matchHandler)
 	mux.HandleFunc("/schedule", scheduleHandler.ScheduleHandler)
+	mux.HandleFunc("/news-latest", cargoHandler.GetNewsLatest)
 
 	// Create HTTP server
 	httpServer := &http.Server{

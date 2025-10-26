@@ -39,6 +39,25 @@ func NewClientWithoutLogin() (*WikiClient, error) {
 	return &WikiClient{client: w}, nil
 }
 
+func (c *WikiClient) CargoQuery(ctx context.Context, table, fields, where string) (any, error) {
+	params := map[string]string{
+		"action": "cargoquery",
+		"format": "json",
+		"tables": table,
+		"fields": fields,
+	}
+	if where != "" {
+		params["where"] = where
+	}
+
+	result, err := c.client.Get(params)
+	if err != nil {
+		return nil, fmt.Errorf("error executing cargoquery: %w", err)
+	}
+
+	return result, nil
+}
+
 func (c *WikiClient) GetWikiPage(ctx context.Context, page string) (string, error) {
 	result, _, err := c.client.GetPageByName(page)
 	if err != nil {
